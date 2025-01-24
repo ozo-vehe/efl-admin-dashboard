@@ -111,8 +111,12 @@ const approveBookingRequest = async (id: string) => {
   is_loading.value = true;
   console.log('approveBookingRequest', id)
   try {
-    await approveBooking(id)
-    is_loading.value = false;
+    const res = await approveBooking(id)
+    if(res.statusCode >= 200 && res.statusCode < 300) {
+      alert('Approved successfully');
+      console.log(res);
+      is_loading.value = false;
+    }
   } catch (error) {
     console.log(error);
     is_loading.value = false;

@@ -62,11 +62,15 @@ export const useBookingStore = defineStore("bookingStore", {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.token}`,
         },
+        body: JSON.stringify({
+          status: "approved",
+        })
       });
       console.log(req);
       const res = await req.json();
       console.log(res);
       this.fetchBookings();
+      return res;
     },
     filterBookings(filter: string) {
       if (filter === "all") {
