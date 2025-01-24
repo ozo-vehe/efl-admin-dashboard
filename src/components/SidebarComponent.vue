@@ -62,6 +62,7 @@ const handleFilter = (id: string) => {
 
 const handleLogout = async() => {
   await userLogout();
+  window.location.reload();
   console.log('Logout clicked');
 };
 
