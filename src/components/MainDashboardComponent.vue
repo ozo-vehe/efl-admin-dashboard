@@ -43,7 +43,7 @@
               {{ index + 1 }}
             </td>
             <td class="whitespace-nowrap px-6 py-4 text-[14px] text-gray-900">
-              {{ request.name }}
+              {{ request.agencyName }}
             </td>
             <td class="whitespace-nowrap px-6 py-4 text-[14px] text-gray-900">
               {{ request.phone }}
