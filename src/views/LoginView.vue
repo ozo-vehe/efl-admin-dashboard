@@ -20,11 +20,6 @@
         <span v-if="is_loading" class="block w-5 h-5 border-x border-gray-50 rounded-full animate-spin"></span>
         <span v-else>Login</span>
       </button>
-
-      <div class="mt-4 text-center">
-        <p>Don't have an account? <RouterLink @click="handleClick" to="signup" class="text-blue-500">Signup</RouterLink>
-        </p>
-      </div>
     </form>
   </div>
 </template>
