@@ -29,9 +29,6 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router';
 import { useBookingStore } from '@/stores/booking';
 
-const handleClick = () => {
-  console.log('clicked')
-}
 
 const bookingsStore = useBookingStore()
 const { userLogin } = bookingsStore
@@ -62,7 +59,7 @@ const handleLogin = async () => {
       return;
     }
     is_loading.value = false
-    router.push('/dashboard')
+    router.push('/booking_calendar')
   } catch (error) {
     console.error('Login error:', error)
   }

@@ -1,12 +1,18 @@
 <template>
   <main class="min-h-screen bg-gray-100 border overflow-x-auto px-4 py-6">
-    <header class="my-8">
-      <h1 class="text-3xl font-[500] capitalize">booking request list</h1>
+    <header class="my-7">
+      <h1 class="text-4xl font-[700] uppercase">booking calendar</h1>
+      <div class="booking_filter border border-gray-400 outline-none w-fit pr-3 h-[40px] rounded-[8px] mt-8">
+        <select name="filter" id="filter" class="w-[150px] h-full pl-2 bg-gray-100 rounded-[8px] outline-none"
+          v-model="filter_value" @change="handleFilter">
+          <option value="all">All</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
     </header>
-    <div class="">
-      <VCalendar @dayclick="handleGetDayBookingRequests" :attributes="attributes" :rows="2" class="gap-6 booking_calendar" expanded />
-    </div>
-    <!-- <div class="table_container overflow-x-auto">
+    <div class="table_container overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200 rounded-[12px] bg-gray-50">
         <thead class="border">
           <tr class="h-16 bg-gray-200 rounded-[12px]">
@@ -73,49 +79,48 @@
                 {{ request.status }}
               </span>
             </td>
-            <td v-if="request.status === 'pending'" class="whitespace-nowrap px-6 py-4 flex items-center justify-center gap-4">
-              <span v-if="is_loading && request.id === approving_id" class="block w-4 h-4 border-x border-blue-900 rounded-full animate-spin"></span>
+            <td v-if="request.status === 'pending'"
+              class="whitespace-nowrap px-6 py-4 flex items-center justify-center gap-4">
+              <span v-if="is_loading && request.id === approving_id"
+                class="block w-4 h-4 border-x border-blue-900 rounded-full animate-spin"></span>
               <button v-if="!is_loading" @click="handleBookingRequest(request.id, 'approved')"
-                class='bg-blue-100 text-blue-900 px-2 py-1 rounded-full capitalize text-xs'>
-                approve
+                class='bg-blue-100 rounded-full capitalize w-[30px] h-[30px] p-2'>
+                <img class="w-full h-full object-contain"
+                  src="https://img.icons8.com/ios-filled/1e3a8a/50/checkmark--v1.png" alt="checkmark--v1" />
               </button>
               <button v-if="!is_loading" @click="handleBookingRequest(request.id, 'rejected')"
-                class='bg-red-100 text-red-900 px-2 py-1 rounded-full capitalize text-xs'>
-                reject
+                class='bg-red-100 p-2 w-[30px] h-[30px] rounded-full capitalize'>
+                <img class="w-full h-full object-contain"
+                  src="https://img.icons8.com/material-rounded/7f1d1d/24/delete-sign.png" alt="delete-sign" />
               </button>
             </td>
           </tr>
         </tbody>
       </table>
-    </div> -->
+    </div>
   </main>
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount, ref, watch, type Ref } from 'vue'
+import { onBeforeMount, ref, type Ref } from 'vue'
 import { useBookingStore } from '@/stores/booking'
 import { storeToRefs } from 'pinia'
+import { useRoute } from 'vue-router'
 console.log("Main dashboard")
 
 const bookingStore = useBookingStore();
-const { filteredBookings, bookedDates, bookings } = storeToRefs(bookingStore);
+const { bookings } = storeToRefs(bookingStore);
 const { assignBookingStatus } = bookingStore;
 
+const route = useRoute();
+
+console.log(route.params.id)
+
+const filter_value: Ref<string> = ref("all");
 const is_loading = ref(false);
 const approving_id = ref('');
-const bookedDatesArray: Ref<any[]> = ref([]);
-
-const handleGetDayBookingRequests = async (e: any) => {
-  const month = e.month.toString().padStart(2, '0');
-  const day = e.day.toString().padStart(2, '0');
-  const year = e.year;
-
-  const date = `${year}-${month}-${day}`;
-  console.log('handleGetDayRequests', date);
-  const x = bookings.value.filter((booking: any) => booking.day === date);
-
-  console.log(x);
-}
+const allFilteredBookings: Ref<any[]> = ref([]);
+const filteredBookings: Ref<any[]> = ref([]);
 
 const formatDateTime = (isoString: string | Date) => {
   const date = new Date(isoString);
@@ -146,24 +151,37 @@ const handleBookingRequest = async (id: string, status: string) => {
   }
 }
 
-const attributes = ref([
-  {
-    highlight: true,
-    dates: [
-      ...bookedDatesArray.value,
-    ],
-  },
-]);
+const handleFilter = () => {
+  console.log("Filter changing");
+  console.log(filter_value.value)
+  const bookings_copy = [...allFilteredBookings.value]
+  console.log(bookings_copy);
 
-watch(bookedDates, (newVal, oldVal) => {
-  console.log('bookedDates changed');
-  bookedDatesArray.value = newVal;
-  const y = bookedDatesArray.value[0];
-  console.log(y)
-  attributes.value[0].dates = [
-    ...bookedDatesArray.value,
-  ];
-  // console.log(bookedDatesArray.value);
+  if (filter_value.value === "all") filteredBookings.value = [...bookings_copy];
+  else if (filter_value.value === "pending") {
+    filteredBookings.value = bookings_copy.filter((booking: any) => booking.status === filter_value.value);
+  } else if (filter_value.value === "approved") {
+    filteredBookings.value = bookings_copy.filter((booking: any) => booking.status === filter_value.value);
+    console.log(filteredBookings.value)
+  } else {
+    filteredBookings.value = []
+    return;
+  }
+
+}
+
+onBeforeMount(() => {
+  console.log("On before mount")
+  if (route.params.id === "all") {
+    filteredBookings.value = [...bookings.value];
+    allFilteredBookings.value = [...bookings.value];
+    return;
+  }
+
+  filteredBookings.value = bookings.value.filter((booking: any) => {
+    return booking.day === route.params.id
+  });
+  allFilteredBookings.value = [...filteredBookings.value];
 })
 </script>
 
@@ -189,13 +207,5 @@ watch(bookedDates, (newVal, oldVal) => {
 /* Track on hover */
 .table_container::-webkit-scrollbar-track:hover {
   background: #ddd;
-}
-
-.vc-container * {
-  color: #6366f1;
-  border: thin solid red !important;
-}
-.vc-week, .weekdays {
-  border: thin solid green !important;
 }
 </style>

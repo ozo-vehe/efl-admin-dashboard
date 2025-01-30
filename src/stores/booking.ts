@@ -11,6 +11,7 @@ export const useBookingStore = defineStore("bookingStore", {
   state: () => ({
     bookings: [] as any[],
     filteredBookings: [] as any[],
+    bookedDates: [] as any[],
     token: "",
   }),
   actions: {
@@ -53,9 +54,10 @@ export const useBookingStore = defineStore("bookingStore", {
       const res = await req.json();
       console.log(res);
       this.bookings = res.data;
-      this.filteredBookings = this.bookings;
+      this.filteredBookings = res.data;
+      this.bookedDates = this.bookings.map((booking) => new Date(booking.day));
     },
-    async approveBooking(bookingId: string) {
+    async assignBookingStatus(bookingId: string, status: string) {
       const req = await fetch(`${BASE_API_URL}/bookings/${bookingId}/confirm`, {
         method: "POST",
         headers: {
@@ -63,7 +65,7 @@ export const useBookingStore = defineStore("bookingStore", {
           Authorization: `Bearer ${this.token}`,
         },
         body: JSON.stringify({
-          status: "approved",
+          status: `${status}`,
         })
       });
       console.log(req);
