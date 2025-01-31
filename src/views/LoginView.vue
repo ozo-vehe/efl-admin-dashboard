@@ -59,7 +59,7 @@ const handleLogin = async () => {
       return;
     }
     is_loading.value = false
-    router.push('/dashboard')
+    router.push('/booking_calendar')
   } catch (error) {
     console.error('Login error:', error)
   }
