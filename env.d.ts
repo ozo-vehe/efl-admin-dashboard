@@ -1,2 +1,2 @@
 /// <reference types="vite/client" />
-declare 'vue-cal'
+declare module 'vue-cal'
