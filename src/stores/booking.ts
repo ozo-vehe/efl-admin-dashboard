@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 
 const BASE_API_URL = "https://apitest.al-ibrabmemorialschool.com.ng/api";
-// const API_TOKEN = "10|HHDFMnJMeB8B0vRwOTegSzgWS3wf9xBWPP28yHqL3447ca64"
+
 interface UserLoginDetails {
   email: string;
   password: string;
@@ -53,8 +53,8 @@ export const useBookingStore = defineStore("bookingStore", {
       console.log(req);
       const res = await req.json();
       console.log(res);
-      this.bookings = res.data;
-      this.filteredBookings = res.data;
+      this.bookings = res.data.sort((a: any, b: any) => new Date(b.day).getTime() - new Date(a.day).getTime());
+      this.filteredBookings = this.bookings;
       this.bookedDates = this.bookings.map((booking) => new Date(booking.day));
     },
     async assignBookingStatus(bookingId: string, status: string) {

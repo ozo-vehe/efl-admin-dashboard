@@ -13,7 +13,8 @@
       </div>
     </header>
     <div class="table_container overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200 rounded-[12px] bg-gray-50">
+      <span v-if="is_table_loading" class="block animate-spin w-8 h-8 mx-auto border-x border-gray-700 rounded-full"></span>
+      <table v-else class="min-w-full divide-y divide-gray-200 rounded-[12px] bg-gray-50">
         <thead class="border">
           <tr class="h-16 bg-gray-200 rounded-[12px]">
             <th scope="col" class="px-6 py-3 text-left text-[14px] font-[600] text-gray-700">
@@ -106,22 +107,19 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeMount, ref, type Ref } from 'vue'
+import { onBeforeMount, ref, type Ref, watch } from 'vue'
 import { useBookingStore } from '@/stores/booking'
 import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
-console.log("Main dashboard")
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
-const { assignBookingStatus } = bookingStore;
-
+const { assignBookingStatus, fetchBookings } = bookingStore;
 const route = useRoute();
-
-console.log(route.params.id)
 
 const filter_value: Ref<string> = ref("all");
 const is_loading = ref(false);
+const is_table_loading = ref(true);
 const approving_id = ref('');
 const allFilteredBookings: Ref<any[]> = ref([]);
 const filteredBookings: Ref<any[]> = ref([]);
@@ -136,17 +134,15 @@ const formatDateTime = (isoString: string | Date) => {
 };
 
 const handleBookingRequest = async (id: string, status: string) => {
-  if (status === '') {
-    return;
-  }
+  if (!status) return;
+  
   approving_id.value = id;
   is_loading.value = true;
-  console.log('rejectBookingRequest', id)
+  
   try {
     const res = await assignBookingStatus(id, status)
     if (res.statusCode >= 200 && res.statusCode < 300) {
-      alert('Successfully assigned status' + status);
-      console.log(res);
+      alert(`Successfully assigned status: ${status}`);
       is_loading.value = false;
     }
   } catch (error) {
@@ -156,37 +152,37 @@ const handleBookingRequest = async (id: string, status: string) => {
 }
 
 const handleFilter = () => {
-  console.log("Filter changing");
-  console.log(filter_value.value)
-  const bookings_copy = [...allFilteredBookings.value]
-  console.log(bookings_copy);
+  const bookings_copy = [...allFilteredBookings.value];
 
-  if (filter_value.value === "all") filteredBookings.value = [...bookings_copy];
-  else if (filter_value.value === "pending") {
+  if (filter_value.value === "all") {
+    filteredBookings.value = bookings_copy;
+  } else if (["pending", "approved", "rejected"].includes(filter_value.value)) {
     filteredBookings.value = bookings_copy.filter((booking: any) => booking.status === filter_value.value);
-  } else if (filter_value.value === "approved") {
-    filteredBookings.value = bookings_copy.filter((booking: any) => booking.status === filter_value.value);
-    console.log(filteredBookings.value)
   } else {
-    filteredBookings.value = []
-    return;
+    filteredBookings.value = [];
   }
-
 }
 
-onBeforeMount(() => {
-  console.log("On before mount")
+const filterBookingsByDay = () => {
+  is_table_loading.value = true;
   if (route.params.id === "all") {
     filteredBookings.value = [...bookings.value];
     allFilteredBookings.value = [...bookings.value];
+    is_table_loading.value = false;
     return;
   }
 
-  filteredBookings.value = bookings.value.filter((booking: any) => {
-    return booking.day === route.params.id
-  });
+  filteredBookings.value = bookings.value.filter((booking: any) => booking.day === route.params.id);
   allFilteredBookings.value = [...filteredBookings.value];
-})
+  is_table_loading.value = false;
+}
+
+watch(() => route.params.id, filterBookingsByDay);
+
+onBeforeMount(async () => {
+  await fetchBookings();
+  filterBookingsByDay();
+});
 </script>
 
 <style scoped>
