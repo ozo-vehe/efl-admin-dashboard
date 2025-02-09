@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 
-const BASE_API_URL = "https://apitest.al-ibrabmemorialschool.com.ng/api";
+const BASE_API_URL = "https://booking-prototype.efl.africa/api";
 
 interface UserLoginDetails {
   email: string;
@@ -74,14 +74,23 @@ export const useBookingStore = defineStore("bookingStore", {
       this.fetchBookings();
       return res;
     },
-    filterBookings(filter: string) {
-      if (filter === "all") {
-        this.filteredBookings = this.bookings;
-        return;
-      }
-      this.filteredBookings = this.bookings.filter(
-        (booking) => booking.status === filter
-      );
+    async downloadBooking() {
+      console.log("Downloading...")
+      const req = await fetch(`${BASE_API_URL}/export/bookings`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${this.token}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          day: "2025-02-02",
+          status: "approved"
+        })
+      })
+      console.log(req);
+      const res = await req.json();
+      console.log(res);
     },
   },
 });

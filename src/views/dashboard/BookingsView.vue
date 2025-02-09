@@ -2,18 +2,31 @@
   <main class="min-h-screen bg-gray-100 border overflow-x-auto px-4 py-6">
     <header class="my-7">
       <h1 class="text-4xl font-[700] uppercase">booking calendar</h1>
-      <div class="booking_filter border border-gray-400 outline-none w-fit pr-3 h-[40px] rounded-[8px] mt-8">
-        <select name="filter" id="filter" class="w-[150px] h-full pl-2 bg-gray-100 rounded-[8px] outline-none"
-          v-model="filter_value" @change="handleFilter">
-          <option value="all">All</option>
-          <option value="approved">Approved</option>
-          <option value="pending">Pending</option>
-          <option value="rejected">Rejected</option>
-        </select>
+      <div class="mt-8 flex flex-wrap gap-4 items-center">
+        <div class="booking_filter border border-gray-400 outline-none w-fit pr-3 h-[40px] rounded-[8px]">
+          <select name="filter" id="filter" class="w-[150px] h-full pl-2 bg-gray-100 rounded-[8px] outline-none"
+            v-model="filter_value" @change="handleFilter">
+            <option value="all">All</option>
+            <option value="approved">Approved</option>
+            <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <button aria-label="download button" type="button"
+          class="border bg-gray-700 text-gray-50 px-3 h-[40px] rounded-[8px] capitalize hover:bg-gray-800 transition-all duration-300 font-bold flex items-center justify-center gap-2 min-w-[130px]"
+          @click="handleBookingDownload()">
+          <span v-if="is_download_loading"
+            class="block w-4 h-4 border-x border-gray-50 animate-spin rounded-full"></span>
+          <span v-else class="flex items-center gap-2">
+            download
+            <img class="w-5" src="https://img.icons8.com/forma-bold/f9fafb/24/download.png" alt="download" />
+          </span>
+        </button>
       </div>
     </header>
     <div class="table_container overflow-x-auto">
-      <span v-if="is_table_loading" class="block animate-spin w-8 h-8 mx-auto border-x border-gray-700 rounded-full"></span>
+      <span v-if="is_table_loading"
+        class="block animate-spin w-8 h-8 mx-auto border-x border-gray-700 rounded-full"></span>
       <table v-else class="min-w-full divide-y divide-gray-200 rounded-[12px] bg-gray-50">
         <thead class="border">
           <tr class="h-16 bg-gray-200 rounded-[12px]">
@@ -114,12 +127,13 @@ import { useRoute } from 'vue-router'
 
 const bookingStore = useBookingStore();
 const { bookings } = storeToRefs(bookingStore);
-const { assignBookingStatus, fetchBookings } = bookingStore;
+const { assignBookingStatus, fetchBookings, downloadBooking } = bookingStore;
 const route = useRoute();
 
 const filter_value: Ref<string> = ref("all");
 const is_loading = ref(false);
 const is_table_loading = ref(true);
+const is_download_loading = ref(false)
 const approving_id = ref('');
 const allFilteredBookings: Ref<any[]> = ref([]);
 const filteredBookings: Ref<any[]> = ref([]);
@@ -133,12 +147,21 @@ const formatDateTime = (isoString: string | Date) => {
   });
 };
 
+const handleBookingDownload = async () => {
+  const date = route.params.id;
+  if (!date) return;
+  if (date == "all") return;
+  is_download_loading.value = true;
+  await downloadBooking();
+  is_download_loading.value = false;
+}
+
 const handleBookingRequest = async (id: string, status: string) => {
   if (!status) return;
-  
+
   approving_id.value = id;
   is_loading.value = true;
-  
+
   try {
     const res = await assignBookingStatus(id, status)
     if (res.statusCode >= 200 && res.statusCode < 300) {
