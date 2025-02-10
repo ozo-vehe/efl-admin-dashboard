@@ -45,7 +45,7 @@ import { useBookingStore } from '@/stores/booking';
 
 // STORES DECLARATIONS
 const bookingStore = useBookingStore();
-const { filterBookings, userLogout } = bookingStore;
+const { userLogout } = bookingStore;
 
 // INTERFACES DECLARATIONS
 interface SidebarLink {
@@ -73,7 +73,6 @@ const toggleSidebar = () => {
 
 const handleFilter = (id: string) => {
   active_link.value = id;
-  filterBookings(id);
 };
 
 const handleLogout = async () => {

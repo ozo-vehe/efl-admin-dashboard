@@ -1,7 +1,7 @@
 <template>
   <main class="min-h-screen bg-gray-100 border overflow-x-auto px-4 py-6">
     <header class="my-7">
-      <h1 class="text-4xl font-[700] uppercase">booking calendar</h1>
+      <h1 class="text-4xl font-[700] uppercase">bookings</h1>
       <div class="mt-8 flex flex-wrap gap-4 items-center">
         <div class="booking_filter border border-gray-400 outline-none w-fit pr-3 h-[40px] rounded-[8px]">
           <select name="filter" id="filter" class="w-[150px] h-full pl-2 bg-gray-100 rounded-[8px] outline-none"
@@ -166,6 +166,8 @@ const handleBookingRequest = async (id: string, status: string) => {
     const res = await assignBookingStatus(id, status)
     if (res.statusCode >= 200 && res.statusCode < 300) {
       alert(`Successfully assigned status: ${status}`);
+      await fetchBookings();
+      await handleFilter();
       is_loading.value = false;
     }
   } catch (error) {
