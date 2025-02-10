@@ -79,8 +79,8 @@
               {{ request.blNumber }}
             </td>
             <td class="whitespace-nowrap px-6 py-4 text-[14px]">
-              {{ request.containerNumber }}
-            </td>
+                <span class="block mb-1" v-for="(container, index) in request.containers" :key="index">{{ container.containerNumber }}</span>
+              </td>
             <td class="whitespace-nowrap px-6 py-4 text-[14px]">
               {{ request.invoiceNumber }}
             </td>
